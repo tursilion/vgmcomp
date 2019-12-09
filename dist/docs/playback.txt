@@ -1,0 +1,40 @@
+The playback libraries are included with libti99, which is my library for the GCC compiler (available at github.com). If you wish to use from assembly instead of C, I've provided versions of the playback routines that assemble under Cory Burr's "Asm994a", although I have not explicitly tested these. See the notes in that folder.
+
+Full documentation will (eventually?) be in libti99, but for now a quick summary will do here.
+
+There are four playback files - use only the one you will need. They are:
+
+tiplayer - plays back a single music track at 60hz (uses the least memory and CPU per tick)
+
+tiplayer30hz - plays back a single music track at 30hz. Every other tick is then free, may cause some quality loss, especially in arpeggios, although the compressor tries to compensate if it's told.
+
+tiplayersfx - plays back a music track and a sound effect with priority at the same time (sound effects override music channels), at 60hz. This uses the most CPU and almost the most memory.
+
+tiplayersfx30 - like tiplayersfx, but plays back at 30hz, alternating music and sound effect processing to spread out the workload. CPU use is comparable to tiplayer playing a single music track, but this uses the most memory. May cause some quality loss, especially in arpeggios.
+
+The following functions are available. The suffix "30", "sfx", or "sfx30" should be added depending on the version you are using. Unless you modify the code, you MUST use a workspace of >8300 for your code, and you must leave >8322 - >8341 free for the player's workspace.
+
+COLECO NOTE: for the ColecoVision, there is a single header file and no suffixes. See the readme.txt in that folder.
+
+stinit		(default,30,sfx,sfx30)
+Pass a pointer to the packed data in R1, and the index of the song in R2 (0-based)
+Prepares to start playing the specified music. Invalid inputs cause unpredictable behaviour.
+
+ststop		(default,30,sfx,sfx30)
+No arguments.
+Stops the currently playing music (safe to call if none, can use to initialize variables).
+
+stplay		(default,30,sfx,sfx30)
+No arguments.
+Call this function from vblank (or other 60hz mechanism) to perform the actual playback. Even in the 30hz versions, you must call this function at 60hz.
+
+sfxinitsfx	(sfx,sfx30)
+Pass a pointer to the packed data in R1, the index of the sound effect in R2 (0-based), and the priority of the sound effect in R3 (higher=more important). Sound effects will be started if they are higher or equal to the currently playing sound effect (if any).
+
+sfxstopsfx	(sfx,sfx30)
+Stop the currently playing sound effect, if any. If music is playing, it continues.
+
+allstopsfx	(sfx,sfx30)
+Stops both sound effects and music, if any. Safe to call if either or neither are playing.
+
+Note that there is no provision for 50hz playback, indeed the compressor assumes you always want 60hz. The easiest, though somewhat hacky, way to make the tunes play at the correct rate on a 50hz machine is to keep a counter, and call the stplay twice every fifth time. (This won't add as much of a CPU load as you might think, as in practice most calls are just counting down). This ensures 60 updates per second, and is rarely, if ever, noticable to the listener.

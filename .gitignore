@@ -348,3 +348,9 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# sdcc
+.map
+.i
+#.s - can't do cause the TI assembler is using it... whatever
+.lst

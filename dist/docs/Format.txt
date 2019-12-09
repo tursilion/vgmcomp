@@ -1,0 +1,127 @@
+FILE FORMAT DESCRIPTION
+-----------------------
+
+The file format describes a container containing multiple sound files, each packed in
+such a manner as to benefit from each other's presence, and occupying a total maximum
+size of 64k.
+
+HEADER
+------
+
+The file begins with two 16-bit indexes:
+
+0000 - Offset of the song stream pointer table. Each table is 24 bytes in length.
+0002 - Offset of the frequency table. Each entry is two bytes.
+
+To determine how many songs are packed in the file, subtract the address of the
+song stream pointer table (at >0000) from the address of the frequency table 
+(at >0002), and divide by 24.
+
+SONG STREAM POINTER TABLE
+-------------------------
+
+For each song in the container, contains 12 stream pointers:
+
+-Four pointers to frequency streams
+-Four pointers to volume streams
+-Four pointers to time streams
+
+There is no indication of the number of songs available, as this is meant as a
+programmer's format and not a musical interchange format. It is recommended
+that for file interchange, only one song per file be stored.
+
+To reach songs after the first, add 24 bytes for each index required.
+
+FREQUENCY TABLE
+---------------
+
+For each entry there are two bytes. The first byte contains the 4 least significant bits
+of the frequency with the most significant nibble guaranteed zeroed, as needed for the
+sound chip. Simply 'OR' in the command bits and send to the sound chip.
+
+The second byte contains the most significant 8 bits of the frequency. Simply send it
+verbatim to the sound chip after sending the command byte.
+
+There is no indication of how many frequencies are in the table, but there may not be
+more than 256 entries.
+
+FORMAT OF A SONG
+----------------
+
+Each song (which can also be a sound effect) consists of 12 compressed streams, each
+compressed in the same manner. For each of the sound chip's four voices, there are
+three streams: a tone stream, a volume stream, and a timing stream.
+
+The timing stream is master, each byte in the timing stream indicates whether a new
+note or volume is required (or both), and how many frames at 60hz to delay until the
+next timing byte should be read. The format is two bits of control and 6 bits of 
+time delay:
+
+80   40   20   10   08   04   02   01
+--   --   ---------------------------
+|    |      time to delay in ticks
+|    +-- update volume this tick
++----update frequency this tick
+
+If the timestream byte returned is 0x00, the channel contains no more audio data.
+When all four channels report no more data, the song is done.
+
+When updating volume, the returned byte will contain the actual attenuation value
+in the least significant nibble (with the most significant nibble guaranteed to
+be zeroed). You can simply 'OR' in the correct command bits and send to the sound
+generator.
+
+When updating frequency on voices 1-3, the returned byte is an index into the
+frequency table. Multiply the byte by two and retrieve the two bytes from the
+frequency table.
+
+When updating frequency on voice 4, the noise channel, the returned byte contains
+the actual noise selection in the least significant nibble (with the most
+significant nibble guaranteed to be zeroed). You can simply 'OR' in the correct
+command bits and send to the sound generator.
+
+The timestream has 6 magic values for data:
+
+	// 0x7F -- run of four 0x41 bytes (AAAA)
+	// 0x7E -- AAA
+	// 0x7D -- AA
+	// 0x7C -- BBB
+	// 0x7B -- BB
+	// 0x7A -- CC
+
+
+FORMAT OF A COMPRESSED STREAM
+-----------------------------
+
+All streams are compressed in the same manner, using a combination of run-length
+encoding and string back-references. As no decompression buffer is used, the 
+back-references refer to the compressed data, rather than the decompressed data.
+
+The stream consists of a sequence of variable-length blocks, starting with a 
+control byte that identifies the type and length of the block.
+
+The control byte has the following format:
+
+80  40  20  10  08  04  02  01
+------  ----------------------
+  |       length of data
+  +-- control bits
+
+The control bits define the following types of data:
+
+00 - inline run of data - take bytes directly from this point in the stream
+01 - RLE - the next byte is repeated 'length of data' times
+10 - short back reference - the next byte is the LSB of the offset WITHIN THE CURRENT STREAM (MSB is 0x00)
+11 - long back reference - the next two bytes are the offset WITHIN THE ENTIRE FILE
+
+The decompression of a stream is independent of the playback of the data within it.
+
+TODO:
+Runs need to be at least 3 bytes long, so we have six unused values we could use:
+0xC0, 0xC1, 0xC2 and 0x80, 0x81, 0x82
+
+These could be lookups into a small table used to redirect a read to a different command, allowing common backreferences to be compressed to one byte. In some songs this might save quite a bit.
+
+This seems to have potential, but it's risky, since every byte moved can affect the data further down the file...
+
+

@@ -1,0 +1,159 @@
+********************************************************************************
+*
+* Unpacker for VGM packer (Tursi)
+*
+********************************************************************************
+
+dat40	 data >4000				* bitfield used by the unpacker
+save	 bss 2						* this needs to be in RAM
+
+******************
+* Unpack a stream to VDP
+* this is based on my audio player,
+* so does not need access to the
+* uncompressed data. Hopefully faster.
+* R0 - CPU source
+* R1 - VDP dest if <0x8000, CPU if >0x8000 (so no decode to low RAM)
+* R2 - output length (yes, you have to know)
+*
+* following are also used internally
+* r3 - streampos	(0)
+* r4 - streamref	(2)
+* r5 - streamcnt	(4)
+* r6 - streambase	(6)
+******************
+unpack
+	mov r11,@save
+	mov r0,r3			streampos
+	clr r4				streamref
+	clr r5				streamcnt
+	mov r0,r6			streambase
+	
+	MOV R1,R1			dest check
+	JLT vdpmode
+
+* this is CPU destination	
+cpuplp2
+	bl @getbyte			* get a byte
+	movb r0,*r1+		* write it to CPU
+	dec r2
+	jne unplp2
+	mov @save,r11		* yes done
+	B *R11
+	
+* this is VDP destination	
+vdpmode	
+	MOV R1,R0				* set the address
+	ORI R0,>4000
+	SWPB R0
+	MOVB R0,@>8C02
+	SWPB R0
+	MOVB R0,@>8C02
+	
+unplp2
+	bl @getbyte			* get a byte
+	movb r0,@>8C00	* write it to VDP
+	dec r2
+	jne unplp2
+	mov @save,r11		* yes done
+	B *R11
+
+******************
+* get a compressed byte from a stream - stream data base in r3
+* byte is return in r0 msb
+* helper for unpack, uses r3-r6
+* r3 - streampos	(old 0)
+* r4 - streamref	(old 2)
+* r5 - streamcnt	(old 4)
+* r6 - streambase	(old 6)
+******************
+getbyte
+	mov r4,r4					* test streamref
+	jeq getb1					* not set
+	ci r4,>ffff				* test for repeat count
+	jeq getb1					* not backref
+	movb *r4+, r0			* get back-referenced byte
+	dec r5						* decrement counter
+	jne getb2					* not 0 yet
+	clr r4						* out of bytes,  clear back reference ptr
+getb2
+	b *r11						* and return
+ 
+getb1
+	mov r5,r5					* test streamcnt
+	jeq getb3					* out of bytes,  need to figure out the next set
+
+	dec r5						* count down
+	jeq getb1inc			* increment always if last byte
+	mov r4,r4					* test streamref is 0
+	jeq getb1inc			* increment if not a ref (it must have been >ffff here)
+
+* get byte with no increment
+	movb *r3,r0				* get byte from current run
+	b *r11						* and return
+
+getb1inc
+* get byte with increment
+	movb *r3+,r0			* get byte from current run
+	b *r11						* and return
+
+nostream
+	movb r5,r0				* return (r5 is expected to be zero!)
+	b *R11
+
+getb3
+* count is zero, need to get a new command
+	clr r5						* prepare r5
+	movb *r3+,r5			* get new count byte
+	jeq nostream			* was zero
+	jgt getb4					* if high bit is clear (no >80)
+
+	coc @dat40,r5			* check for 40 (indicates 2 byte reference)
+	jeq getb3double
+
+* get single byte back reference
+	andi r5, >3f00		* mask it
+	swpb r5						* store in the lsbyte
+	dec r5						* we are going to consume one byte below,  and we know it's at least 4
+	clr r4						* prepare msb
+	movb *r3+, r4			* get backref pointer
+	swpb r4						* put in correct order
+	a r6,r4						* add stream base, r4 now has the correct address
+	jmp getb3fin
+
+getb3double
+	andi r5, >3f00		* mask it
+	swpb r5						* store in the lsbyte
+	dec r5						* we are going to consume one byte below,  and we know it's at least 4
+	movb *r3+, r4			* get backref pointer (can't use mov,  might be misaligned)
+	swpb r4
+	movb *r3+, r4
+	swpb r4						* get back into correct order
+	a r6, r4					* make into a pointer (songbase and streambase are the same)
+
+getb3fin
+	movb *r4+, r0			* get back-referenced byte
+	b *r11						* and return
+
+getb4
+* >80 is not set, check for just >40
+	coc @dat40,r5
+	jeq getb5					* it's set, so go process that
+
+* neither bit is set, so it's just a plain run
+	swpb r5						* fix byte order (assumes no corruption,  lsbyte is already zero)
+	movb *r3+, r0			* get byte from current run
+	dec r5						* count down - no need to test here
+	clr r4						* make sure the streamref is zeroed
+	b *r11						* and return
+
+getb5
+* >40 is set - set up for a repeated character
+	andi r5, >3f00		* mask it
+	swpb r5						* put in the correct byte
+	dec r5						* count down the one we are going to take
+	movb *r3, r0			* get the appropriate byte - note no increment!
+	seto r4						* set the reference to >ffff
+	b *r11						* and return
+
+	end
