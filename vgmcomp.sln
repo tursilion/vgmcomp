@@ -1,11 +1,15 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27004.2009
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vgmcomp", "vgmcomp\vgmcomp.vcxproj", "{2366E69E-AB71-4950-8669-9941A68C8DE1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "packer", "packer\packer.vcxproj", "{517E235E-AF0E-40C8-942F-B0E1ACB6715E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vgmuncomp", "vgmuncomp\vgmuncomp\vgmuncomp.vcxproj", "{34376503-17A0-4147-B666-4619A048B1BD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "QuickPlayer", "QuickPlayer\QuickPlayer.vcxproj", "{15667BC9-8FD1-4A29-94B4-22B568B5DDA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,8 +29,15 @@ Global
 		{34376503-17A0-4147-B666-4619A048B1BD}.Debug|Win32.Build.0 = Debug|Win32
 		{34376503-17A0-4147-B666-4619A048B1BD}.Release|Win32.ActiveCfg = Release|Win32
 		{34376503-17A0-4147-B666-4619A048B1BD}.Release|Win32.Build.0 = Release|Win32
+		{15667BC9-8FD1-4A29-94B4-22B568B5DDA6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{15667BC9-8FD1-4A29-94B4-22B568B5DDA6}.Debug|Win32.Build.0 = Debug|Win32
+		{15667BC9-8FD1-4A29-94B4-22B568B5DDA6}.Release|Win32.ActiveCfg = Release|Win32
+		{15667BC9-8FD1-4A29-94B4-22B568B5DDA6}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {156A2EDE-8A35-43B6-8CEE-7115B5446C8C}
 	EndGlobalSection
 EndGlobal
