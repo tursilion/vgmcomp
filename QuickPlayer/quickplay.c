@@ -2,6 +2,7 @@
 // Just a quick example that the Windows tool fills in for easy usage.
 
 #include <vdp.h>
+#include <sound.h>
 #include <player.h>
 
 // song is loaded by the Windows setup at >A000
@@ -44,10 +45,12 @@ int main() {
 
     // and play it on the interrupt
     for (;;) {
-        VDP_WAIT_VBLANK_CRU;
-        WRAP_STPLAY;
-        // allow QUIT
-        VDP_INT_POLL;
+		vdpwaitvint();	// waits for a console interrupts, allows quit/etc
+		if (*pDone) {
+			WRAP_STPLAY;
+		} else {
+			MUTE_SOUND();
+		}
     }
 
     // never reached

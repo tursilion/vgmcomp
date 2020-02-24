@@ -307,6 +307,22 @@ void unlock_f18a();
 
 void lock_f18a();
 # 5 "quickplay.c" 2
+# 1 "../../libti99/sound.h" 1
+# 40 "../../libti99/sound.h"
+inline void SET_SOUND_PTR(unsigned int x) { *((volatile unsigned int*)0x83cc) = x; }
+
+
+inline void SET_SOUND_VDP() { *((volatile unsigned char*)0x83fd) |= 0x01; }
+
+
+inline void SET_SOUND_GROM() { *((volatile unsigned char*)0x83fd) &= ~0x01; }
+
+
+inline void START_SOUND() { *((volatile unsigned char*)0x83ce) = 1; }
+
+
+inline void MUTE_SOUND() { *((volatile unsigned char*)0x8400)=0x90|0x0f; *((volatile unsigned char*)0x8400)=0xB0|0x0f; *((volatile unsigned char*)0x8400)=0xD0|0x0f; *((volatile unsigned char*)0x8400)=0xF0|0x0f; }
+# 6 "quickplay.c" 2
 # 1 "../../libti99/player.h" 1
 # 20 "../../libti99/player.h"
 extern volatile unsigned int * const pVoice;
@@ -327,7 +343,7 @@ void stplay();
 
 
 unsigned int stcount(const void *pSong);
-# 6 "quickplay.c" 2
+# 7 "quickplay.c" 2
 
 
 
@@ -369,10 +385,12 @@ int main() {
 
 
     for (;;) {
-        __asm__( "clr r12\n\ttb 2\n\tjeq -4\n\tmovb @>8802,r12" : : : "r12" );;
-        __asm__( "bl @stplay\n\tlwpi >8300" );;
-
-        __asm__("LIMI 2"); __asm__("LIMI 0");;
+  vdpwaitvint();
+  if (*pDone) {
+   __asm__( "bl @stplay\n\tlwpi >8300" );;
+  } else {
+   MUTE_SOUND();
+  }
     }
 
 

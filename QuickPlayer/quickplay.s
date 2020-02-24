@@ -3,8 +3,11 @@
 
 	def	main
 main
-	dect r10
-	mov  r11, *r10
+	ai   r10, >FFFA
+	mov  r10, r0
+	mov  r11, *r0+
+	mov  r9, *r0+
+	mov  r13, *r0+
 	clr  r1
 	bl   @set_graphics
 	mov  @gImage, r1
@@ -17,7 +20,7 @@ main
 	li   r5, >1F00
 	movb *r1, r2
 	jeq  L2
-L13
+L15
 	cb   r2, r5
 	jh  JMP_0
 	b    @L3
@@ -34,42 +37,52 @@ L4
 	movb r4, @>8C02
 	movb *r1, r2
 	jeq  L5
-L10
+L11
 	movb r2, @>8C00
 	inc  r1
 	movb *r1, r2
-	jne  L10
+	jne  L11
 L5
 	inc  r3
 	ci   r3, >17
 	jeq  L2
 	inc  r1
 	movb *r1, r2
-	jne  L13
+	jne  L15
 L2
 	li   r1, >A000
 	clr  r2
 	bl   @stinit
-L8
+	mov  @pDone, r13
+	li   r9, vdpwaitvint
+L13
+	bl   *r9
+	movb *r13, r1
+	jne  JMP_1
+	b    @L8
+JMP_1
+L16
 * Begin inline assembler code
-* 47 "quickplay.c" 1
-	clr r12
-	tb 2
-	jeq -4
-	movb @>8802,r12
-* 0 "" 2
-* 48 "quickplay.c" 1
+* 50 "quickplay.c" 1
 	bl @stplay
 	lwpi >8300
 * 0 "" 2
-* 50 "quickplay.c" 1
-	LIMI 2
-* 0 "" 2
-* 50 "quickplay.c" 1
-	LIMI 0
-* 0 "" 2
 * End of inline assembler code
-	b    @L8
+	bl   *r9
+	movb *r13, r1
+	jeq  JMP_2
+	b    @L16
+JMP_2
+L8
+	li   r2, >9FBF
+	movb r2, @>8400
+	swpb r2
+	movb r2, @>8400
+	li   r1, >DFFF
+	movb r1, @>8400
+	swpb r1
+	movb r1, @>8400
+	b    @L13
 L3
 	srl  r2, 8
 	ai   r2, >FFE0
@@ -93,6 +106,10 @@ textout
 	byte 0
 	byte 0
 	bss 782
+
+	ref	vdpwaitvint
+
+	ref	pDone
 
 	ref	stinit
 
