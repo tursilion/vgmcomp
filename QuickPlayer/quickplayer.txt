@@ -1,0 +1,17 @@
+This is a short and simple file to explain how to use the VGMComp quick player.
+
+First, you need a VGM file and the compressor. You can find a lot of VGMs at https://www.smspower.org/Music/VGMs
+
+You'll need to stick to Master System PSG files, others will not be playable. VGM and VGZ files are both supported.
+
+The compressor is here: http://www.harmlesslion.com/cgi-bin/onesoft.cgi?88
+
+(Though you might have it already because it's included with the quick player).
+
+With apologies, you need to know the basics of using the command prompt, although if you are lucky you might be able to get away with dragging the VGM file to the "vgmcomp.exe" file. You'll get better results using the command line options and reading what the output says.
+
+After you pack the file (vgmcomp.exe myvgm.vgz) successfully, you'll get a "myvgm.spf" file (spf = sound packed file). this is what the quick player will play.
+
+Run the quick player, and select the SPF file. Then you can enter up to 24 lines of up to 30 characters each to show on the screen. Click build and select an output filename. From 2 to 4 files will be created, depending on the size, starting with your filename, and with the last character incremented as is normal for Editor/Assembler #5.
+
+The maximum size for the SPF file is 24,558 bytes.
