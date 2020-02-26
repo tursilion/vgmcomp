@@ -76,13 +76,14 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "QuickPlayer for VGMComp v1.07"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Select the SPF file you want to embed, and type some text for the screen, then click build to create an E/A#5 program.",IDC_STATIC,7,7,152,44
+    LTEXT           "Select the SPF file you want to embed, and type some text for the screen, then click build to create an E/A#5 program.",IDC_STATIC,7,7,152,26
     EDITTEXT        IDC_EDIT1,9,54,124,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON1,139,54,20,14
     EDITTEXT        IDC_EDIT2,7,96,152,80,ES_MULTILINE | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
     LTEXT           "Keep text no more than 32 columns across, no more than 24 lines",IDC_STATIC,7,76,152,18
     PUSHBUTTON      "Build",IDC_BUTTON2,109,180,50,14
     PUSHBUTTON      "Cancel",IDC_BUTTON3,7,180,50,14
+    CONTROL         "Loop playback",IDC_LOOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,41,61,10
 END
 
 

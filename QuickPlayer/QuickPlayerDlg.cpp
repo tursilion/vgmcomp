@@ -157,6 +157,13 @@ void CQuickPlayerDlg::OnBnClickedButton2()
 	}
 	pTxt->GetWindowText(file);
 
+    CWnd *pLoop = GetDlgItem(IDC_LOOP);
+	if (NULL == pTxt) {
+		AfxMessageBox("Internal error. Can not proceed.");
+		return;
+	}
+    bool loop = ((CButton*)pLoop)->GetCheck() == BST_CHECKED;
+
 	FILE *fp;
 	fp=fopen(file, "rb");
 	if (NULL == fp) {
@@ -199,8 +206,8 @@ void CQuickPlayerDlg::OnBnClickedButton2()
 		text[idx]=rawtext;
 	}
 	for (idx=0; idx<24; idx++) {
-		if (text[idx].GetLength() > 32) {
-			AfxMessageBox("Text string too long - 32 chars per line max");
+		if (text[idx].GetLength() > 30) {
+			AfxMessageBox("Text string too long - 30 chars per line max");
 			return;
 		}
 	}
@@ -247,6 +254,16 @@ void CQuickPlayerDlg::OnBnClickedButton2()
 		// we just make sure it's set to load another file
 		quickplay[128]=0xff;
 		quickplay[129]=0xff;
+        // NOTE: if you change the output, put a proper loop flag in it
+        // rather than hacking the binary as here...
+        if (loop) {
+            if ((quickplay[0x13e]!=0x28)||(quickplay[0x13f]!=0x0c)||(quickplay[0x182]!=0x21)||(quickplay[0x183]!=0xc2)) {
+                AfxMessageBox("Binary mismatch, can't patch loop. Contact Tursi.");
+                return;
+            }
+            quickplay[0x183] = 0xb0;    // back to stinit()
+        }
+
 		// now dump it
 		FILE *fp=fopen(outname, "wb");
 		if (NULL == fp) {
@@ -255,6 +272,11 @@ void CQuickPlayerDlg::OnBnClickedButton2()
 		}
 		fwrite(quickplay, 1, SIZE_OF_QUICKPLAY, fp);
 		fclose(fp);
+
+        // repair it if needed for the next pass
+        if (loop) {
+            quickplay[0x183] = 0xc2;
+        }
 
 		// increment last char of name and then write the song into that
         // the song can be up to 3 files long
