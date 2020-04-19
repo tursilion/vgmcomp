@@ -395,7 +395,7 @@ void TestPack(unsigned char *pSrc, int nSize) {
 
 int main(int argc, char* argv[])
 {
-	printf("v107 - 12/16/2017\n");
+	printf("v108 - 4/18/2020\n");
 
 	if (argc < 2) {
 		printf("vgmcomp [-v] [-scalefreq] [-halfvolrange] [-30hz] [-forcerun x] <filename>\n");
