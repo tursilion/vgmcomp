@@ -542,6 +542,10 @@ int main(int argc, char* argv[])
 		unsigned int nRate = 60;
 		if (nVersion > 0x100) {
 			nRate = *((unsigned int*)&buffer[0x24]);
+            if (nRate == 0) {
+                printf("\rRefresh rate set to 0, treating as 60\n");
+                nRate = 60;
+            }
 			if ((nRate!=50)&&(nRate!=60)) {
 				printf("\rweird refresh rate %d\n", nRate);
 				return -1;
@@ -552,8 +556,8 @@ int main(int argc, char* argv[])
 		if (nVersion >= 0x110) {
 			nShiftRegister = buffer[0x2a];
 			if ((nShiftRegister!=16)&&(nShiftRegister!=15)) {
-				printf("\rweird shift register %d\n", nShiftRegister);
-				return -1;
+				printf("\rweird shift register %d, treating as 15\n", nShiftRegister);
+                nShiftRegister = 15;
 			}
 		}
 		// TI/Coleco has a 15 bit shift register, so if it's 16 (default), scale it down
