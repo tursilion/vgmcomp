@@ -1,3 +1,9 @@
+# note - this is deprecated. Please consider https://github.com/tursilion/vgmcomp2
+
+I'm leaving this up only for historical consideration...
+
+-----------------------
+
 This tool performs compression of VGM ('Video Game Music') files compatible with the TI sound chip (mostly the Sega Master System, Game Gear, and ColecoVision sources). It breaks down the playback into streams to increase redundancy, then packs using a combination of RLE and string compression. The resulting decompression is only a few lookups for each string to be unpacked, and does not require a decompression buffer (although it does use a fair bit of state data).
 
 Features:
