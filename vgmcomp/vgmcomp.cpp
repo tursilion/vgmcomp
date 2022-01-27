@@ -589,12 +589,13 @@ int main(int argc, char* argv[])
 		while (nOffset < nEOF) {
 			static int nRunningOffset = 0;
 
-			// parse data for a tick
+            // parse data for a tick
 			switch (buffer[nOffset]) {		// what is it? what is it?
 			case 0x50:		// PSG data byte
 				{
 					// here's the good stuff!
 					unsigned char c = buffer[nOffset+1];
+
 					if (c&0x80) {
 						// it's a command byte - update the byte data
 						nCmd=(c&0x70)>>4;

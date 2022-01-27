@@ -9,6 +9,23 @@
 // music is inline in here
 #include "packed.h"
 
+// Option 3: use the hand tuned asm code directly with register preservation
+// This version tags all the GCC registers except 12-15 as clobbered, and GCC
+// will have to decide whether to save them based on your code.
+// Note it DOES clobber 12-15, I just don't think they need to be preserved.
+// If I'm wrong, please do add them. Determine vblank any way you like
+// (I recommend VDP_WAIT_VBLANK_CRU), and then include this define "CALL_PLAYER;"
+// This is probably the safest for the hand-tuned code
+// This calls both the SFX and the Music players
+#define CALL_PLAYER \
+    __asm__(                                                        \
+        "bl @SfxLoop\n\t"                                           \
+        "bl @SongLoop"                                              \
+        : /* no outputs */                                          \
+        : /* no arguments */                                        \
+        : "r0","r1","r2","r3","r4","r5","r6","r7","r8","r9","r11","cc"   \
+        )
+
 int main() {
 	unsigned char oldkey = 0;					// prevent key repeat
 	unsigned char isPlaying = 0;				// remember if we are playing a song so we can call mute on end
